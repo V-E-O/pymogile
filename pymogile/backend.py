@@ -146,9 +146,12 @@ class Backend(object):
 
     sockfile = sock.makefile()
     line = sockfile.readline()
+    sockfile.close()
+    sock.close()
 
     self.run_hook('do_request_finished', cmd, self.last_host_connected)
     LOG.debug('RESPONSE: %r' % line)
+
 
     matcher = OK_RE.match(line)
     if matcher:
@@ -191,6 +194,8 @@ class Backend(object):
       self.last_host_connected = tracker
       return sock
     else:
+      LOG.debug("failed connect to tracker %s" % str(tracker))
+      sock.close()
       return None
 
   def _connect_sock(self, sock, sin, timeout=0.25):
@@ -200,6 +205,7 @@ class Backend(object):
       sock.settimeout(timeout)
     else:
       sock.setblocking(1)
+    sock.setblocking(1)
 
     try:
       err = sock.connect_ex(sin)
